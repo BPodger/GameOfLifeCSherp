@@ -3,7 +3,7 @@
 
 public class GameOfLife
 {
-    private bool[,] BoardState;    //before going any further lets save some headache now and add a border to the boardstate so that we can impliment our rules check easier
+    private bool[,] BoardState;  //the base boardstate that will represent live cells with true values and dead cells with false values
     private bool[,] FutureBoard; //a copy of the BoardState that we will be manipulating in the NextStep method to save our results without changing the current boardstate we're working on
                                  //now that dynamic arrays have been tested, work can start on constructors and building and populating a board
     public GameOfLife()
@@ -12,7 +12,7 @@ public class GameOfLife
         FutureBoard = new bool[7, 7];
     }
     public GameOfLife(int width, int length)
-    { //a very boring consturctor I decided to add at the last minute thats the same as the randomiser but without the option for randomisation
+    { //a very boring basic consturctor that makes a dead board with a play size as indicated
         BoardState = new bool[width + 2, length + 2];
         FutureBoard = new bool[width + 2, length + 2];
     }
@@ -31,7 +31,7 @@ public class GameOfLife
     }
 
     public GameOfLife(char[,] BoardInput)
-    {//constructor that will accept a character array as the starting board state, similar to the requested output
+    {//constructor that will accept a character array as the starting board state
         BoardState = new bool[BoardInput.GetLength(0) + 2, BoardInput.GetLength(1) + 2];
         FutureBoard = new bool[BoardInput.GetLength(0) + 2, BoardInput.GetLength(1) + 2];
         for (int i = 1; i < BoardInput.GetLength(0) + 1; i++)
@@ -70,8 +70,8 @@ public class GameOfLife
     }
 
     public char[,] GetBoardState()
-    { //just need to change this over to return the trimmed boardstate TODO: Update all the tests
-        char[,] ReturnValue = new char[BoardState.GetLength(0) - 2, BoardState.GetLength(1) - 2]; //same size as the actual board minus the trimmings
+    { //returns the boardstate as a character array with * for live cells and - for dead cells
+        char[,] ReturnValue = new char[BoardState.GetLength(0) - 2, BoardState.GetLength(1) - 2]; //same size as the actual board minus the border
         for (int i = 0; i < ReturnValue.GetLength(0); i++)
         {
             for (int j = 0; j < ReturnValue.GetLength(1); j++)
@@ -89,12 +89,12 @@ public class GameOfLife
         return ReturnValue;
     }
 
-    public void SetBoardState(char[,] InputBoard)
+    public void SetBoardState(char[,] InputBoard) //allows the game board to be set to a different value using an existing board
     {
         BoardState = new bool[InputBoard.GetLength(0) + 2, InputBoard.GetLength(1) + 2];
         FutureBoard = new bool[InputBoard.GetLength(0) + 2, InputBoard.GetLength(1) + 2];
         for (int i = 1; i < InputBoard.GetLength(0) + 1; i++)
-        { //literally just a return of the char constuctor above for setting boardstate
+        { 
             for (int j = 1; j < InputBoard.GetLength(1) + 1; j++)
             {
                 if (InputBoard[i - 1, j - 1] == '*')
@@ -121,14 +121,13 @@ public class GameOfLife
                 for (int k = i - 1; k <= i + 1; k++)
                 { //we're going though each cell in the grid(minus border) and checking each neighbour,
                     for (int l = j - 1; l <= j + 1; l++)
-                    { // so we've got nested loops in loops that are refrencing the loops that they're in because we need the location of the current cell to be able to loop through its neighbours (yo dog I heard you like loops....)
-                      //TODO fix this so it doesnt count the cell its in, otherwise its not going to work properly (dead cells are the same but alive cells would count themselves and thats not how the game works)
-                        if (k != i | l != j) { neighbours += Convert.ToInt32(BoardState[k, l]); }
+                    {
+                       if (k != i | l != j) { neighbours += Convert.ToInt32(BoardState[k, l]); }
                     }
                 }
                 //      Console.Write(neighbours); //testing code to be removed
                 switch (neighbours)
-                { //implementing ruleset for game of life, 2 to keep alive and 3 to become alive, everything else is death so that will be the default
+                { //implementing ruleset for game of life, 2 neighbours to stay alive and 3 to replicate, everything else is death (over/under population) so that will be the default
                     case 2:
                         if (BoardState[i, j] == true)
                         {
